@@ -1,2 +1,2 @@
 # MehrshahrMelk source + GitHub Actions
-Follow README_BUILD.md to build signed APK via GitHub Actions.
+Follow README_BUILD to build signed APK via GitHub Actions.
