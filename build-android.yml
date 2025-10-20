@@ -1,0 +1,39 @@
+name: Build Android APK
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/mehrshahrmelk.keystore
+      - name: Create gradle properties for signing
+        run: |
+          echo "RELEASE_STORE_FILE=android/app/mehrshahrmelk.keystore" >> $GITHUB_ENV
+          echo "RELEASE_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "RELEASE_KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
+          echo "RELEASE_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+      - name: Flutter pub get
+        run: flutter pub get
+      - name: Build APK
+        run: flutter build apk --release --no-shrink
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mehrshahrmelk-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
